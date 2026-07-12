@@ -6,7 +6,9 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import javax.print.Doc;
+import java.util.ArrayList;
+import java.util.Scanner;
+
 import java.io.IOException;
 import java.util.List;
 import java.util.Random;
@@ -81,17 +83,40 @@ public class HhParser {
 
     }
 
+    private static List<Vacancy> extract(int n) {
+        List<Vacancy> jobs = new ArrayList<>();
 
-    public static void main(String[] args) throws IOException {
-        Document doc = fetchPage(0);
-        if (doc != null) {
-            Elements cards = findVacancyCards(doc);
+        for (int page = 0; page < n; page++) {
+            try {
+                Thread.sleep(500);
 
-            for (Element card : cards) {
-                Vacancy v = parseCard(card);
-                System.out.println(v.title + " | " + v.company
-                + " | " + v.salary + " | " + v.experience);
+                Document doc = fetchPage(page);
+                if (doc == null) {
+                    continue;
+                }
+
+                Elements cards = findVacancyCards(doc);
+
+                for (Element card : cards) {
+                    jobs.add(parseCard(card));
+                }
+            } catch (Exception e) {
+                System.out.println("Ошибка на странице " + page + ": " + e.getMessage());
             }
+        }
+        return jobs;
+    }
+
+
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        System.out.print("Сколько страниц спарсить ");
+        int n = scanner.nextInt();
+
+        List<Vacancy> jobs = extract(n);
+        System.out.println("Всего собрано вакансий: " + jobs.size());
+        for (Vacancy v : jobs) {
+            System.out.println(v.title + " | " + v.company + " | " + v.salary);
         }
     }
 }
