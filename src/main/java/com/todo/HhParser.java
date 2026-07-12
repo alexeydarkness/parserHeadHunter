@@ -3,7 +3,10 @@ package com.todo;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 
+import javax.print.Doc;
 import java.io.IOException;
 import java.util.List;
 import java.util.Random;
@@ -45,4 +48,22 @@ public class HhParser {
         return response.parse();
     }
 
+    private static Elements findVacancyCards(Document doc) {
+        Elements cards = doc.select("div.vacancy-info--ieHKDTkezpEj0Gsx");
+        System.out.println("Найден карточек: " + cards.size());
+        return cards;
+    }
+
+
+    public static void main(String[] args) throws IOException {
+        Document doc = fetchPage(0);
+        if (doc != null) {
+            Elements cards = findVacancyCards(doc);
+
+            if (!cards.isEmpty()) {
+                System.out.println("---- HTML первой карточки ----");
+                System.out.println(cards.first().outerHtml());
+            }
+        }
+    }
 }
