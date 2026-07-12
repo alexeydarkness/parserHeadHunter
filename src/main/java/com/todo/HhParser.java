@@ -6,6 +6,15 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+
+import java.io.File;
+import java.io.FileOutputStream;
+
 import java.util.ArrayList;
 import java.util.Scanner;
 
@@ -107,6 +116,34 @@ public class HhParser {
         return jobs;
     }
 
+    private static void makeExcel(List<Vacancy> vacancies, String filename) {
+        try (Workbook wb = new XSSFWorkbook()) {
+            Sheet sheet = wb.createSheet("Вакансии");
+
+            String[] headers = {"title", "company", "salary", "experience", "rating"};
+            Row headerRow = sheet.createRow(0);
+            for (int i = 0; i < headers.length; i++) {
+                headerRow.createCell(i).setCellValue(headers[i]);
+            }
+            int rowNum = 1;
+            for (Vacancy v : vacancies) {
+                Row row = sheet.createRow(rowNum++);
+                row.createCell(0).setCellValue(v.title);
+                row.createCell(1).setCellValue(v.company);
+                row.createCell(2).setCellValue(v.salary);
+                row.createCell(3).setCellValue(v.experience);
+                row.createCell(4).setCellValue(v.rating);
+            }
+
+            try (FileOutputStream out = new FileOutputStream(filename)) {
+                wb.write(out);
+            }
+            System.out.println("Файл сохранен как: " + filename);
+        } catch (IOException e) {
+            System.out.println("Ошибка при сохранении файла Excel: " + e.getMessage());
+        }
+    }
+
 
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
@@ -115,10 +152,10 @@ public class HhParser {
 
         List<Vacancy> jobs = extract(n);
         System.out.println("Всего собрано вакансий: " + jobs.size());
-        for (Vacancy v : jobs) {
-            System.out.println(v.title + " | " + v.company + " | " + v.salary);
-        }
+
+        makeExcel(jobs, "vacancies.xlsx");
     }
+
 }
 
 
