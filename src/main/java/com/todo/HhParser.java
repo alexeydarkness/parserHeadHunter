@@ -15,6 +15,8 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import java.io.File;
 import java.io.FileOutputStream;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Scanner;
 
@@ -31,14 +33,14 @@ public class HhParser {
     );
 
     private static final Random RANDOM = new Random();
-    private static final String BASE_URl = "https://hh.ru/search/vacancy?text=мобильный+разработчик";
+    private static final String BASE_URl = "https://hh.ru/search/vacancy?";
 
     private static String randomUserAgent() {
         return USER_AGENTS.get(RANDOM.nextInt(USER_AGENTS.size()));
     }
 
-    private static Document fetchPage(int page) throws IOException {
-        String url = BASE_URl + "&page=" + page + "&area=1";
+    private static Document fetchPage(int page, String query) throws IOException {
+        String url = BASE_URl + "text" + query + "&page=" + page + "&area=1";
 
         Connection.Response response = Jsoup.connect(url)
                 .userAgent(randomUserAgent())
@@ -92,14 +94,14 @@ public class HhParser {
 
     }
 
-    private static List<Vacancy> extract(int n) {
+    private static List<Vacancy> extract(int n, String query) {
         List<Vacancy> jobs = new ArrayList<>();
 
         for (int page = 0; page < n; page++) {
             try {
                 Thread.sleep(500);
 
-                Document doc = fetchPage(page);
+                Document doc = fetchPage(page, query);
                 if (doc == null) {
                     continue;
                 }
@@ -147,10 +149,14 @@ public class HhParser {
 
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
+        System.out.print("Какую вакансию ищем? ");
+        String vac = scanner.nextLine();
+        String query = URLEncoder.encode(vac, StandardCharsets.UTF_8);
+
         System.out.print("Сколько страниц спарсить ");
         int n = scanner.nextInt();
 
-        List<Vacancy> jobs = extract(n);
+        List<Vacancy> jobs = extract(n, query);
         System.out.println("Всего собрано вакансий: " + jobs.size());
 
         makeExcel(jobs, "vacancies.xlsx");
