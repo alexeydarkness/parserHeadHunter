@@ -49,7 +49,11 @@ public class HhParser {
     }
 
     private static Elements findVacancyCards(Document doc) {
-        Elements cards = doc.select("div.vacancy-info--ieHKDTkezpEj0Gsx");
+        Elements cards = doc.select("[data-qa=vacancy-serp__vacancy]");
+
+        if (cards.isEmpty()) {
+            cards = doc.select("[data-qa=serp-item]");
+        }
         System.out.println("Найден карточек: " + cards.size());
         return cards;
     }
