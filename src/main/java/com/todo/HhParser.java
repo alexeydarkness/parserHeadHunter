@@ -58,16 +58,43 @@ public class HhParser {
         return cards;
     }
 
+    private static Vacancy parseCard(Element card) {
+        Vacancy v = new Vacancy();
+
+        Element title = card.selectFirst("[data-qa=serp-item__title]");
+        Element company    = card.selectFirst("[data-qa=vacancy-serp__vacancy-employer-text]");
+        Element salary     = card.selectFirst("[data-qa=vacancy-serp__vacancy-compensation]");
+        Element experience = card.selectFirst("[data-qa=vacancy-serp__vacancy-work-experience]");
+
+        v.title = (title != null) ? title.text().trim() : "Не указано";
+        v.company = (company != null) ? company.text().trim() : "Не указано";
+        v.experience = (experience != null) ? experience.text().trim() : "Не указано";
+
+        if (salary != null) {
+            v.salary = salary.text().split("₽")[0].trim();
+        } else {
+            v.salary = "Не указано";
+        }
+
+        v.rating = "";
+        return v;
+
+    }
+
 
     public static void main(String[] args) throws IOException {
         Document doc = fetchPage(0);
         if (doc != null) {
             Elements cards = findVacancyCards(doc);
 
-            if (!cards.isEmpty()) {
-                System.out.println("---- HTML первой карточки ----");
-                System.out.println(cards.first().outerHtml());
+            for (Element card : cards) {
+                Vacancy v = parseCard(card);
+                System.out.println(v.title + " | " + v.company
+                + " | " + v.salary + " | " + v.experience);
             }
         }
     }
 }
+
+
+
